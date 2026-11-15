@@ -1,0 +1,60 @@
+name: Build Unsigned iOS App
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode.app
+
+      - name: Locate SwiftPM Directory
+        run: |
+          SWIFT_PM_DIR=$(find . -maxdepth 1 -name "*.swiftpm" | head -n 1)
+          if [ -z "$SWIFT_PM_DIR" ]; then
+            echo "No .swiftpm folder found at root!"
+            exit 1
+          fi
+          echo "PROJECT_DIR=$SWIFT_PM_DIR" >> $GITHUB_ENV
+          echo "Found project at $SWIFT_PM_DIR"
+
+      - name: Build Unsigned App Binary
+        run: |
+          cd "${{ env.PROJECT_DIR }}"
+          xcodebuild -scheme App \
+                     -sdk iphoneos \
+                     -configuration Release \
+                     CODE_SIGNING_ALLOWED=NO \
+                     CODE_SIGNING_IDENTITY="" \
+                     CODE_SIGNING_REQUIRED=NO \
+                     build
+
+      - name: Package into IPA
+        run: |
+          APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "*.app" -path "*/Build/Products/Release-iphoneos/*" | head -n 1)
+          if [ -z "$APP_PATH" ]; then
+            # fallback search
+            APP_PATH=$(find ~/Library/Developer/Xcode/DerivedData -name "*.app" | head -n 1)
+          fi
+          if [ -z "$APP_PATH" ]; then
+            echo "App bundle not found!"
+            find ~/Library/Developer/Xcode/DerivedData -name "*.app" || true
+            exit 1
+          fi
+          echo "Using app at: $APP_PATH"
+          mkdir -p Payload
+          cp -r "$APP_PATH" Payload/
+          zip -r app.ipa Payload
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-app-ipa
+          path: app.ipa
