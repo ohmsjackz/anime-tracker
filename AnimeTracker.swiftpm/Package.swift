@@ -7,11 +7,11 @@ let package = Package(
         .iOS("17.0")
     ],
     products: [
-        .executable(name: "App", targets: ["App"])
+        .executable(name: "AnimeTracker", targets: ["AnimeTracker"])
     ],
     targets: [
         .executableTarget(
-            name: "App",
+            name: "AnimeTracker",
             path: "Sources"
         )
     ]
