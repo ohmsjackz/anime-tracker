@@ -440,7 +440,7 @@ struct SearchView: View {
         do {
             results = try await AniListService.shared.search(query: q)
         } catch {
-            errorMessage = "Couldn\u2019t load results. Check your connection."
+            errorMessage = "Could not load results. Check your connection."
         }
     }
     
@@ -594,7 +594,7 @@ struct DetailView: View {
                         HStack {
                             Text("Score")
                             Spacer()
-                            Text(entry.score.map { String(format: "%.1f", $0) } ?? "\u2014")
+                            Text(entry.score.map { String(format: "%.1f", $0) } ?? "-")
                                 .foregroundStyle(.secondary)
                                 .monospacedDigit()
                         }
@@ -615,7 +615,7 @@ struct DetailView: View {
                 }
                 
                 Section {
-                    TextField("Add a note\u2026", text: $entry.notes, axis: .vertical)
+                    TextField("Add a note...", text: $entry.notes, axis: .vertical)
                         .lineLimit(3...6)
                         .onChange(of: entry.notes) { _ in persist() }
                 } header: {
@@ -678,7 +678,7 @@ struct AddAnimeView: View {
                             }
                             
                             if let genres = media.genres, !genres.isEmpty {
-                                Text(genres.prefix(3).joined(separator: " \u00b7 "))
+                                Text(genres.prefix(3).joined(separator: " · "))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .lineLimit(2)
