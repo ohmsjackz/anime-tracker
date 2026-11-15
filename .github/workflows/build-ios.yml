@@ -25,29 +25,17 @@ jobs:
           echo "PROJECT_DIR=$SWIFT_PM_DIR" >> $GITHUB_ENV
           echo "Found project at $SWIFT_PM_DIR"
 
-      - name: Show available schemes
+      - name: Show schemes
         run: |
           cd "${{ env.PROJECT_DIR }}"
-          xcodebuild -list || true
-          ls -la
-          ls -la Sources || true
+          xcodebuild -list
 
       - name: Build Unsigned App Binary
         run: |
           cd "${{ env.PROJECT_DIR }}"
-
-          # Try common scheme names
-          SCHEME="App"
-          if ! xcodebuild -list 2>/dev/null | grep -q "App"; then
-            SCHEME=$(xcodebuild -list 2>/dev/null | awk '/Schemes:/{f=1;next} f&&NF{print $1; exit}')
-          fi
-          if [ -z "$SCHEME" ]; then
-            SCHEME="AnimeTracker"
-          fi
-          echo "Using scheme: $SCHEME"
-
+          echo "Building with scheme AnimeTracker"
           xcodebuild \
-            -scheme "$SCHEME" \
+            -scheme AnimeTracker \
             -destination 'generic/platform=iOS' \
             -configuration Release \
             CODE_SIGNING_ALLOWED=NO \
@@ -63,7 +51,7 @@ jobs:
           fi
           if [ -z "$APP_PATH" ]; then
             echo "App bundle not found! Listing DerivedData:"
-            find ~/Library/Developer/Xcode/DerivedData -maxdepth 4 -type d 2>/dev/null | head -50 || true
+            find ~/Library/Developer/Xcode/DerivedData -maxdepth 5 -type d 2>/dev/null | head -80 || true
             find ~/Library/Developer/Xcode/DerivedData -name "*.app" 2>/dev/null || true
             exit 1
           fi
